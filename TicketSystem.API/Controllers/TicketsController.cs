@@ -45,7 +45,7 @@ public class TicketsController : ControllerBase
     }
 
     
-    [Authorize(Roles = "Administrador")]
+    [Authorize(Roles = "Administrador,Operador")]
     [HttpPatch("{id}/estado")]
     public async Task<IActionResult> CambiarEstado(
         Guid id,
@@ -86,7 +86,7 @@ public class TicketsController : ControllerBase
         return Guid.Parse(claim.Value);
     }
 
-    [Authorize(Roles = "Administrador")]
+    [Authorize(Roles = "Administrador,Operador")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Eliminar(Guid id)
     {

@@ -7,10 +7,12 @@ namespace TicketSystem.API.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly ILogger<ExceptionMiddleware> _logger;
+        private readonly IWebHostEnvironment _env;
 
-        public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
+        public ExceptionMiddleware(RequestDelegate next, IWebHostEnvironment env, ILogger<ExceptionMiddleware> logger)
         {
             _next = next;
+            _env = env;
             _logger = logger;
         }
 
@@ -30,7 +32,8 @@ namespace TicketSystem.API.Middleware
                 var response = new
                 {
                     success = false,
-                    message = "Ocurrió un error inesperado. Contacte al administrador."
+                    message = _env.IsDevelopment() ? ex.Message : "Ocurrió un error inesperado. Contacte al administrador.",
+                    details = _env.IsDevelopment() ? ex.StackTrace : null
                 };
 
                 var json = JsonSerializer.Serialize(response);

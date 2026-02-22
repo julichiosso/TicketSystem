@@ -15,5 +15,6 @@ namespace TicketSystem.Aplicacion.DTOs
         public PrioridadTicket Prioridad { get; set; }
         public EstadoTicket Estado { get; set; }
         public DateTime FechaCreacion { get; set; }
+        public string? UsuarioNombre { get; set; }
     }
 }

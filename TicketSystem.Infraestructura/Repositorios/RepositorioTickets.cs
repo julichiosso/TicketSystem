@@ -24,6 +24,7 @@ public class RepositorioTickets : IRepositorioTickets
     public async Task<IEnumerable<Ticket>> ObtenerPorUsuarioAsync(Guid usuarioId)
     {
         return await _context.Tickets
+            .Include(t => t.Usuario)
             .Where(t => t.UsuarioId == usuarioId)
             .ToListAsync();
     }
@@ -43,7 +44,9 @@ public class RepositorioTickets : IRepositorioTickets
     public async Task<(IEnumerable<Ticket> Tickets, int Total)>
 ObtenerFiltradosAsync(FiltroTicketsDto filtro)
     {
-        var query = _context.Tickets.AsQueryable();
+        var query = _context.Tickets
+            .Include(t => t.Usuario)
+            .AsQueryable();
 
         
         if (filtro.Estado.HasValue)

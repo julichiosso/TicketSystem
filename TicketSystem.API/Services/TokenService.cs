@@ -23,9 +23,10 @@ public class TokenService : ITokenService
             new Claim(ClaimTypes.Role, usuario.Rol.ToString()) // 🔥 CLAVE
         };
 
-        var key = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!)
-        );
+        var jwtKey = _configuration["Jwt:Key"] ?? "a_very_long_secret_key_that_is_at_least_32_characters_long";
+        if (jwtKey.Length < 32) jwtKey = jwtKey.PadRight(32, '0');
+        
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
 
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 

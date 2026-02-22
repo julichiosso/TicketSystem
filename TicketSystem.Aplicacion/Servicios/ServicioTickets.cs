@@ -58,7 +58,8 @@ namespace TicketSystem.Aplicacion.Servicios
                 Descripcion = t.Descripcion,
                 Estado = t.Estado,
                 Prioridad = t.Prioridad,
-                FechaCreacion = t.FechaCreacion
+                FechaCreacion = t.FechaCreacion,
+                UsuarioNombre = t.Usuario?.Nombre
             });
         }
         private bool EsTransicionValida(EstadoTicket actual, EstadoTicket nuevo)
@@ -115,7 +116,8 @@ namespace TicketSystem.Aplicacion.Servicios
                     Descripcion = t.Descripcion,
                     Estado = t.Estado,
                     Prioridad = t.Prioridad,
-                    FechaCreacion = t.FechaCreacion
+                    FechaCreacion = t.FechaCreacion,
+                    UsuarioNombre = t.Usuario?.Nombre
                 }),
                 Page = filtro.Page,
                 PageSize = filtro.PageSize,

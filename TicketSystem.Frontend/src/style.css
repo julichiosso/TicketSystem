@@ -1,0 +1,112 @@
+@import "tailwindcss";
+
+:root {
+  font-family: 'Outfit', sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  /* HSL Base: Blue (default) */
+  --primary-h: 221;
+  --primary-s: 83%;
+  --primary-l: 53%;
+
+  /* System Atmosphere Tokens */
+  --bg-main: hsl(var(--primary-h), 40%, 4%);
+  --bg-card: hsla(var(--primary-h), 40%, 8%, 0.4);
+  --border-glow: hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.15);
+  --accent-glow: hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.4);
+
+  color-scheme: dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: var(--bg-main);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  --density-p: 2.5rem;
+}
+
+/* Theme Overrides */
+.theme-blue {
+  --primary-h: 221;
+  --primary-s: 83%;
+  --primary-l: 53%;
+}
+
+.theme-indigo {
+  --primary-h: 239;
+  --primary-s: 84%;
+  --primary-l: 67%;
+}
+
+.theme-emerald {
+  --primary-h: 158;
+  --primary-s: 64%;
+  --primary-l: 52%;
+}
+
+.theme-rose {
+  --primary-h: 346;
+  --primary-s: 87%;
+  --primary-l: 60%;
+}
+
+/* Global Density support */
+[data-density="compact"] {
+  --density-p: 1.5rem;
+}
+
+[data-density="comfortable"] {
+  --density-p: 2.5rem;
+}
+
+@layer base {
+  body {
+    transition: background-color 0.7s ease, color 0.7s ease;
+    font-family: 'Outfit', sans-serif;
+    background-color: var(--bg-main);
+    background-image:
+      radial-gradient(circle at 100% 0%, hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.12) 0%, transparent 40%),
+      radial-gradient(circle at 0% 100%, hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.08) 0%, transparent 40%);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
+  .page-fade-in {
+    animation: fadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Premium Global Utilities */
+  .premium-blur {
+    -webkit-backdrop-filter: blur(24px);
+    backdrop-filter: blur(24px);
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-glow);
+  }
+
+  .bg-primary {
+    background-color: hsl(var(--primary-h), var(--primary-s), var(--primary-l)) !important;
+  }
+
+  .text-primary {
+    color: hsl(var(--primary-h), var(--primary-s), var(--primary-l)) !important;
+  }
+
+  .border-primary {
+    border-color: hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.3) !important;
+  }
+}
