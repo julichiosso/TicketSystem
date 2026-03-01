@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TicketSystem.Dominio.Enumeraciones;
 
 namespace TicketSystem.Dominio.Entidades
@@ -17,12 +14,17 @@ namespace TicketSystem.Dominio.Entidades
         public PrioridadTicket Prioridad { get; set; }
         public EstadoTicket Estado { get; set; } = EstadoTicket.Pendiente;
 
-
         public Guid UsuarioId { get; set; }
         public Usuario Usuario { get; set; } = null!;
 
+        public Guid? OperadorAsignadoId { get; set; }
+        public Usuario? OperadorAsignado { get; set; }
+
         public DateTime FechaCreacion { get; set; }
+        public DateTime? FechaLimite { get; set; }
+        public bool SLACumplido { get; set; } = true;
         public bool IsDeleted { get; set; } = false;
 
+        public ICollection<ComentarioTicket> Comentarios { get; set; } = new List<ComentarioTicket>();
     }
 }

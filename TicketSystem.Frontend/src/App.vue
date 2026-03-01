@@ -1,6 +1,6 @@
 <template>
-  <router-view />
-  <NotificationToast />
+ <router-view />
+ <NotificationToast />
 </template>
 
 <script setup>
@@ -11,6 +11,6 @@ import { useSettingsStore } from './store/settings';
 const settingsStore = useSettingsStore();
 
 onMounted(() => {
-  settingsStore.initSettings();
+ settingsStore.initSettings();
 });
 </script>

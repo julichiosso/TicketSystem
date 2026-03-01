@@ -17,6 +17,66 @@ namespace TicketSystem.Infraestructura.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.0");
 
+            modelBuilder.Entity("TicketSystem.Dominio.Entidades.AuditLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Accion")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Detalle")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("Fecha")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("TicketId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("UsuarioId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AuditLogs");
+                });
+
+            modelBuilder.Entity("TicketSystem.Dominio.Entidades.ComentarioTicket", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("AutorId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("EsInterno")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Mensaje")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("TicketId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AutorId");
+
+                    b.HasIndex("TicketId");
+
+                    b.ToTable("ComentariosTicket");
+                });
+
             modelBuilder.Entity("TicketSystem.Dominio.Entidades.Ticket", b =>
                 {
                     b.Property<Guid>("Id")
@@ -33,10 +93,19 @@ namespace TicketSystem.Infraestructura.Migrations
                     b.Property<DateTime>("FechaCreacion")
                         .HasColumnType("TEXT");
 
+                    b.Property<DateTime?>("FechaLimite")
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("INTEGER");
 
+                    b.Property<Guid?>("OperadorAsignadoId")
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("Prioridad")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("SLACumplido")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Titulo")
@@ -47,6 +116,8 @@ namespace TicketSystem.Infraestructura.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("OperadorAsignadoId");
 
                     b.HasIndex("UsuarioId");
 
@@ -79,15 +150,46 @@ namespace TicketSystem.Infraestructura.Migrations
                     b.ToTable("Usuarios");
                 });
 
+            modelBuilder.Entity("TicketSystem.Dominio.Entidades.ComentarioTicket", b =>
+                {
+                    b.HasOne("TicketSystem.Dominio.Entidades.Usuario", "Autor")
+                        .WithMany()
+                        .HasForeignKey("AutorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TicketSystem.Dominio.Entidades.Ticket", "Ticket")
+                        .WithMany("Comentarios")
+                        .HasForeignKey("TicketId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Autor");
+
+                    b.Navigation("Ticket");
+                });
+
             modelBuilder.Entity("TicketSystem.Dominio.Entidades.Ticket", b =>
                 {
+                    b.HasOne("TicketSystem.Dominio.Entidades.Usuario", "OperadorAsignado")
+                        .WithMany()
+                        .HasForeignKey("OperadorAsignadoId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("TicketSystem.Dominio.Entidades.Usuario", "Usuario")
                         .WithMany()
                         .HasForeignKey("UsuarioId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("OperadorAsignado");
+
                     b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("TicketSystem.Dominio.Entidades.Ticket", b =>
+                {
+                    b.Navigation("Comentarios");
                 });
 #pragma warning restore 612, 618
         }

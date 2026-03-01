@@ -51,6 +51,11 @@ namespace TicketSystem.Infraestructura.Repositorios
             await _context.Usuarios.AddAsync(usuario);
             await _context.SaveChangesAsync();
         }
+        public async Task ActualizarAsync(Usuario usuario)
+        {
+            _context.Usuarios.Update(usuario);
+            await _context.SaveChangesAsync();
+        }
         public async Task EliminarAsync(Usuario usuario)
         {
             _context.Usuarios.Remove(usuario);

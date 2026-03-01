@@ -12,5 +12,6 @@ namespace TicketSystem.Aplicacion.Interfaces
         Task EliminarAsync(Usuario usuario);
 
         Task EliminarAsync(Guid id);
+        Task ActualizarAsync(Usuario usuario);
     }
 }

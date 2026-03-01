@@ -34,8 +34,12 @@ export const useAuthStore = defineStore('auth', {
                 axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
                 return true;
             } catch (err) {
-                console.error('Login error:', err.response?.data || err);
-                this.error = err.response?.data?.message || err.message || 'Error de autenticación';
+                console.error('Login error:', err.response?.data || err.message);
+                this.error = err.response?.data?.message || 
+                             err.response?.data?.details || 
+                             err.response?.statusText || 
+                             err.message || 
+                             'Error de autenticación';
                 return false;
             } finally {
                 this.loading = false;

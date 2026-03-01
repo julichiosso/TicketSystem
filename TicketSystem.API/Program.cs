@@ -143,8 +143,22 @@ using (var scope = app.Services.CreateScope())
     var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher<Usuario>>();
 
   
-    await context.Database.EnsureCreatedAsync();
+    // in development we may have an outdated database built with EnsureCreated
+    // deleting it guarantees migrations run from the first one and avoid conflicts
+    // COMENTADO: NO borrar DB en cada arranque (perdemos datos)
+    // if (app.Environment.IsDevelopment())
+    // {
+    //     try
+    //     {
+    //         await context.Database.EnsureDeletedAsync();
+    //     }
+    //     catch { /* swallow */ }
+    // }
 
+    // apply any pending EF Core migrations (creates DB if necessary)
+    await context.Database.MigrateAsync();
+
+    // seed initial data after migrations
     await DataSeeder.SeedAsync(context, passwordHasher);
 }
 

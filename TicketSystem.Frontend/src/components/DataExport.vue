@@ -1,0 +1,174 @@
+<template>
+ <div class="japanese-box space-y-6">
+ <h3 class="text-lg font-black text-slate-900">Exportar Datos</h3>
+
+ <!-- Filtros -->
+ <div class="grid md:grid-cols-2 gap-4">
+ <div class="space-y-2">
+ <label class="text-xs font-bold text-slate-500 uppercase">Tipo de Datos</label>
+ <select v-model="dataType" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm">
+ <option value="tickets">Tickets</option>
+ <option value="usuarios">Usuarios</option>
+ <option value="auditoria">Auditoría</option>
+ <option value="completo">Datos Completos</option>
+ </select>
+ </div>
+
+ <div class="space-y-2">
+ <label class="text-xs font-bold text-slate-500 uppercase">Rango de Fechas</label>
+ <div class="flex gap-2">
+ <input type="date" v-model="dateFrom" class="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+ <input type="date" v-model="dateTo" class="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+ </div>
+ </div>
+ </div>
+
+ <!-- Seleccionar campos -->
+ <div class="space-y-2">
+ <label class="text-xs font-bold text-slate-500 uppercase">Campos a Incluir</label>
+ <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+ <label v-for="field in availableFields" :key="field" class="flex items-center gap-2 cursor-pointer hover:bg-white p-2 rounded">
+ <input type="checkbox" v-model="selectedFields" :value="field" class="rounded" />
+ <span class="text-sm text-slate-700">{{ field }}</span>
+ </label>
+ </div>
+ </div>
+
+ <!-- Botones de exportación -->
+ <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+ <button @click="exportExcel" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-slate-900 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2">
+ <FileXlsxIcon class="w-4 h-4" />
+ Excel
+ </button>
+ <button @click="exportPdf" class="px-3 py-2 bg-red-600 hover:bg-red-500 text-slate-900 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2">
+ <FileIcon class="w-4 h-4" />
+ PDF
+ </button>
+ <button @click="printData" class="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-bold transition flex items-center justify-center gap-2">
+ <PrinterIcon class="w-4 h-4" />
+ Imprimir
+ </button>
+ <button @click="exportJson" class="px-3 py-2 bg-purple-600 hover:bg-purple-500 text-slate-900 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2">
+ <CodeIcon class="w-4 h-4" />
+ JSON
+ </button>
+ </div>
+
+ <!-- Vista previa -->
+ <div v-if="previewData.length > 0" class="space-y-2">
+ <label class="text-xs font-bold text-slate-500 uppercase">Vista Previa</label>
+ <div class="bg-slate-50 rounded-lg p-3 max-h-48 overflow-auto border border-slate-200">
+ <div class="text-xs text-slate-700 space-y-1">
+ <div v-for="(item, idx) in previewData.slice(0, 5)" :key="idx" class="flex gap-2 pb-2 border-b border-slate-200 last:border-0">
+ <span class="text-slate-500">{{ idx + 1 }}.</span>
+ <span>{{ JSON.stringify(item).substring(0, 80) }}...</span>
+ </div>
+ </div>
+ <div v-if="previewData.length > 5" class="text-xs text-slate-500 mt-2">+ {{ previewData.length - 5 }} más</div>
+ </div>
+ </div>
+ </div>
+</template>
+
+<script setup>
+import { ref, computed } from 'vue';
+import { FileIcon, PrinterIcon, CodeIcon } from 'lucide-vue-next';
+
+const props = defineProps({
+ tickets: Array,
+ usuarios: Array,
+ auditLog: Array
+});
+
+const emit = defineEmits(['export']);
+
+const dataType = ref('tickets');
+const dateFrom = ref('');
+const dateTo = ref('');
+const selectedFields = ref(['ID', 'Título', 'Usuario', 'Estado', 'Fecha']);
+const availableFields = ref(['ID', 'Título', 'Descripción', 'Usuario', 'Estado', 'Prioridad', 'Fecha', 'Comentarios']);
+
+const previewData = computed(() => {
+ let data = [];
+ if (dataType.value === 'tickets' && props.tickets) {
+ data = props.tickets.map(t => ({
+ id: t.id?.substring(0, 8),
+ titulo: t.titulo,
+ usuario: t.usuarioNombre,
+ estado: t.estado,
+ prioridad: t.prioridad,
+ fecha: new Date(t.fechaCreacion).toLocaleDateString('es-ES')
+ }));
+ } else if (dataType.value === 'usuarios' && props.usuarios) {
+ data = props.usuarios.map(u => ({
+ id: u.id,
+ nombre: u.nombre,
+ email: u.email,
+ rol: u.rol
+ }));
+ }
+ return data;
+});
+
+// Exportar a Excel (simulado - en producción usar xlsx)
+const exportExcel = () => {
+ const csv = convertToCSV(previewData.value);
+ downloadFile(csv, 'tickets_' + new Date().toISOString().split('T')[0] + '.csv', 'text/csv');
+};
+
+// Exportar a PDF (simulado - en producción usar pdfkit o similar)
+const exportPdf = () => {
+ const content = previewData.value.map(item => JSON.stringify(item)).join('\n');
+ downloadFile(content, 'tickets_' + new Date().toISOString().split('T')[0] + '.txt', 'text/plain');
+};
+
+// Imprimir
+const printData = () => {
+ const html = `
+ <table border="1" cellpadding="5" cellspacing="0">
+ <thead>
+ <tr>${selectedFields.value.map(f => '<th>' + f + '</th>').join('')}</tr>
+ </thead>
+ <tbody>
+ ${previewData.value.map(item =>
+ '<tr>' + Object.values(item).map(v => '<td>' + v + '</td>').join('') + '</tr>'
+ ).join('')}
+ </tbody>
+ </table>
+ `;
+ const win = window.open('', '', 'width=800,height=600');
+ win.document.write('<html><body>' + html + '</body></html>');
+ win.document.close();
+ win.print();
+};
+
+// Exportar a JSON
+const exportJson = () => {
+ const json = JSON.stringify(previewData.value, null, 2);
+ downloadFile(json, 'tickets_' + new Date().toISOString().split('T')[0] + '.json', 'application/json');
+};
+
+// Convertir a CSV
+const convertToCSV = (data) => {
+ if (!data || data.length === 0) return '';
+ const headers = Object.keys(data[0]);
+ const rows = data.map(item => headers.map(h => item[h]).join(','));
+ return [headers.join(','), ...rows].join('\n');
+};
+
+// Descargar archivo
+const downloadFile = (content, filename, type) => {
+ const blob = new Blob([content], { type });
+ const url = window.URL.createObjectURL(blob);
+ const a = document.createElement('a');
+ a.href = url;
+ a.download = filename;
+ document.body.appendChild(a);
+ a.click();
+ window.URL.revokeObjectURL(url);
+ document.body.removeChild(a);
+};
+
+// Ícono para Excel (usando simple)
+const FileXlsxIcon = () => FileIcon;
+</script>

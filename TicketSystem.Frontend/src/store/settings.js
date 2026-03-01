@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 
 export const useSettingsStore = defineStore('settings', {
     state: () => ({
-        themeColor: localStorage.getItem('themeColor') || 'blue',
+        themeColor: localStorage.getItem('themeColor') || 'light',
         uiDensity: localStorage.getItem('uiDensity') || 'comfortable',
         language: localStorage.getItem('language') || 'es',
         notificationsEnabled: localStorage.getItem('notificationsEnabled') !== 'false'
@@ -40,6 +40,7 @@ export const useSettingsStore = defineStore('settings', {
     getters: {
         themeClasses: (state) => {
             const colors = {
+                light: 'from-gray-200 to-gray-400 shadow-gray-300/20',
                 blue: 'from-blue-600 to-indigo-600 shadow-blue-500/20',
                 indigo: 'from-indigo-600 to-violet-600 shadow-indigo-500/20',
                 emerald: 'from-emerald-600 to-teal-600 shadow-emerald-500/20',

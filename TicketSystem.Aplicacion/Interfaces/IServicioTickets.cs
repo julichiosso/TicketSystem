@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TicketSystem.Aplicacion.Common;
+﻿using TicketSystem.Aplicacion.Common;
 using TicketSystem.Aplicacion.DTOs;
 using TicketSystem.Dominio.Enumeraciones;
+using TicketSystem.Dominio.Entidades;
 
 namespace TicketSystem.Aplicacion.Interfaces
 {
@@ -13,11 +9,15 @@ namespace TicketSystem.Aplicacion.Interfaces
     {
         Task<Guid> CrearAsync(CrearTicketDto dto);
         Task<IEnumerable<TicketDto>> ObtenerPorUsuarioAsync(Guid usuarioId);
+        Task<IEnumerable<TicketDto>> ObtenerPorOperadorAsync(Guid operadorId);
         Task CambiarEstadoAsync(Guid ticketId, EstadoTicket nuevoEstado);
-
         Task<PagedResult<TicketDto>> ObtenerFiltradosAsync(FiltroTicketsDto filtro);
-
         Task EliminarAsync(Guid id);
+        Task AsignarOperadorAsync(Guid ticketId, Guid? operadorId);
 
+        Task<IEnumerable<ComentarioTicketDto>> ObtenerComentariosAsync(Guid ticketId, bool incluirInternos);
+        Task<ComentarioTicketDto> AgregarComentarioAsync(Guid ticketId, Guid autorId, CrearComentarioTicketDto dto);
+        Task<IEnumerable<AuditLog>> ObtenerAuditLogsAsync();
+        Task<MetricasDto> ObtenerMetricasAsync();
     }
 }

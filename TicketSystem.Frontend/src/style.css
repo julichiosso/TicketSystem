@@ -1,24 +1,13 @@
 @import "tailwindcss";
 
 :root {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
-  /* HSL Base: Blue (default) */
-  --primary-h: 221;
-  --primary-s: 83%;
-  --primary-l: 53%;
-
-  /* System Atmosphere Tokens */
-  --bg-main: hsl(var(--primary-h), 40%, 4%);
-  --bg-card: hsla(var(--primary-h), 40%, 8%, 0.4);
-  --border-glow: hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.15);
-  --accent-glow: hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.4);
-
-  color-scheme: dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: var(--bg-main);
+  color-scheme: light;
+  color: #0f172a;
+  background-color: #f8fafc;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -26,31 +15,6 @@
   -moz-osx-font-smoothing: grayscale;
 
   --density-p: 2.5rem;
-}
-
-/* Theme Overrides */
-.theme-blue {
-  --primary-h: 221;
-  --primary-s: 83%;
-  --primary-l: 53%;
-}
-
-.theme-indigo {
-  --primary-h: 239;
-  --primary-s: 84%;
-  --primary-l: 67%;
-}
-
-.theme-emerald {
-  --primary-h: 158;
-  --primary-s: 64%;
-  --primary-l: 52%;
-}
-
-.theme-rose {
-  --primary-h: 346;
-  --primary-s: 87%;
-  --primary-l: 60%;
 }
 
 /* Global Density support */
@@ -64,24 +28,18 @@
 
 @layer base {
   body {
-    transition: background-color 0.7s ease, color 0.7s ease;
-    font-family: 'Outfit', sans-serif;
-    background-color: var(--bg-main);
-    background-image:
-      radial-gradient(circle at 100% 0%, hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.12) 0%, transparent 40%),
-      radial-gradient(circle at 0% 100%, hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.08) 0%, transparent 40%);
-    background-attachment: fixed;
+    background-color: #f8fafc;
     min-height: 100vh;
   }
 
   .page-fade-in {
-    animation: fadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: fadeIn 0.4s ease-out forwards;
   }
 
   @keyframes fadeIn {
     from {
       opacity: 0;
-      transform: translateY(12px);
+      transform: translateY(8px);
     }
 
     to {
@@ -89,24 +47,22 @@
       transform: translateY(0);
     }
   }
+}
 
-  /* Premium Global Utilities */
-  .premium-blur {
-    -webkit-backdrop-filter: blur(24px);
-    backdrop-filter: blur(24px);
-    background-color: var(--bg-card);
-    border: 1px solid var(--border-glow);
-  }
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
 
-  .bg-primary {
-    background-color: hsl(var(--primary-h), var(--primary-s), var(--primary-l)) !important;
-  }
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
 
-  .text-primary {
-    color: hsl(var(--primary-h), var(--primary-s), var(--primary-l)) !important;
-  }
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
 
-  .border-primary {
-    border-color: hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.3) !important;
-  }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }

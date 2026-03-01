@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TicketSystem.Aplicacion.Interfaces;
+using TicketSystem.Aplicacion.DTOs;
+using TicketSystem.Dominio.Enumeraciones;
 
 namespace TicketSystem.API.Controllers;
 
@@ -75,5 +77,27 @@ public class UsuariosController : ControllerBase
         await _repositorioUsuarios.EliminarAsync(usuario);
 
         return NoContent();
+    }
+
+    [HttpPut("roles")]
+    public async Task<IActionResult> UpdateRoles([FromBody] List<ActualizarRolDto> cambios)
+    {
+        if (cambios == null || cambios.Count == 0)
+            return BadRequest(new { message = "No se proporcionaron cambios." });
+
+        foreach (var cambio in cambios)
+        {
+            var usuario = await _repositorioUsuarios.ObtenerPorIdAsync(cambio.Id);
+            if (usuario == null)
+                return NotFound(new { message = $"Usuario {cambio.Id} no encontrado." });
+
+            if (!Enum.IsDefined(typeof(RolUsuario), cambio.Rol))
+                return BadRequest(new { message = $"Rol inválido para usuario {cambio.Id}." });
+
+            usuario.Rol = (RolUsuario)cambio.Rol;
+            await _repositorioUsuarios.ActualizarAsync(usuario);
+        }
+
+        return Ok(new { success = true, message = "Roles actualizados correctamente." });
     }
 }
