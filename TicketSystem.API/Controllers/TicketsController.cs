@@ -37,15 +37,17 @@ public class TicketsController : ControllerBase
         return Ok(tickets);
     }
 
+    
+
     [Authorize(Roles = "Administrador,Operador")]
     [HttpPatch("{id}/estado")]
-    public async Task<IActionResult> CambiarEstado(Guid id, [FromBody] int estado)
+    public async Task<IActionResult> CambiarEstado(Guid id, [FromBody] CambiarEstadoDto dto)
     {
-        if (!Enum.IsDefined(typeof(EstadoTicket), estado))
+        if (!Enum.IsDefined(typeof(EstadoTicket), dto.Estado))
             throw new ArgumentException("Estado inválido");
 
         var actorId = ObtenerUsuarioIdDelToken();
-        await _servicioTickets.CambiarEstadoAsync(id, (EstadoTicket)estado, actorId);
+        await _servicioTickets.CambiarEstadoAsync(id, (EstadoTicket)dto.Estado, actorId);
         return NoContent();
     }
 

@@ -149,11 +149,13 @@ import TicketDetailModal from '../components/TicketDetailModal.vue';
 import TicketCard from '../components/TicketCard.vue';
 import TicketCardSkeleton from '../components/TicketCardSkeleton.vue';
 import Sidebar from '../components/Sidebar.vue';
+import { useNotificationStore } from '../store/notifications';
 
 const router = useRouter();
 const authStore = useAuthStore();
 const ticketsStore = useTicketsStore();
 const settingsStore = useSettingsStore();
+const notificationStore = useNotificationStore();
 
 const activeTab = ref('tickets');
 const tabs = [
@@ -208,12 +210,21 @@ const fetchTickets = async () => {
   }
 };
 
-const updateStatus = async (ticketId, status) => {
+const updateStatus = async (ticketId, newStatus) => {
   try {
-    await axios.patch(`${API_URL}/tickets/${ticketId}/estado`, status);
-    await fetchTickets();
+    await axios.patch(
+      `${API_URL}/tickets/${ticketId}/estado`,
+      { estado: newStatus },
+      { headers: { 'Content-Type': 'application/json' } }
+    );
+    const statusMap = { 1: 'EnProceso', 2: 'Resuelto', 4: 'EsperandoUsuario' };
+    const newState = statusMap[newStatus] ?? newStatus;
+    const index = assignedTickets.value.findIndex(t => t.id === ticketId);
+    if (index !== -1) assignedTickets.value[index] = { ...assignedTickets.value[index], estado: newState };
+    notificationStore.success('Estado actualizado.');
   } catch (e) {
     console.error('Error updating status:', e);
+    notificationStore.error('No se pudo cambiar el estado.');
   }
 };
 

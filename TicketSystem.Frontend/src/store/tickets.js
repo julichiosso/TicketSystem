@@ -164,18 +164,27 @@ export const useTicketsStore = defineStore('tickets', {
       };
     },
 
-      // ── Estado / CRUD ─────────────────────────────────────────────────────
       async updateStatus(ticketId, newStatus) {
-      await axios.patch(`${API_URL}/tickets/${ticketId}/estado`, newStatus, {
-        headers: { 'Content-Type': 'application/json' }
-      });
-      const newState = statusMap[newStatus] ?? newStatus;
-      const index = this.tickets.findIndex(t => t.id === ticketId);
-      if (index !== -1) {
-        this.tickets[index] = { ...this.tickets[index], estado: newState };
+      try {
+        const res = await axios.patch(
+          `${API_URL}/tickets/${ticketId}/estado`,
+          { estado: newStatus },
+          { headers: { 'Content-Type': 'application/json' } }
+        );
+        console.log('[updateStatus] respuesta:', res.status, res.data);
+        const newState = statusMap[newStatus] ?? newStatus;
+        const index = this.tickets.findIndex(t => t.id === ticketId);
+        console.log('[updateStatus] index encontrado:', index, '| nuevo estado:', newState);
+        if (index !== -1) {
+          this.tickets[index] = { ...this.tickets[index], estado: newState };
+          console.log('[updateStatus] ticket actualizado:', this.tickets[index]);
+        }
+        if (this.selectedTicket?.id === ticketId)
+          this.selectedTicket = { ...this.selectedTicket, estado: newState };
+      } catch(e) {
+        console.error('[updateStatus] ERROR:', e.response?.status, e.response?.data);
+        throw e;
       }
-      if (this.selectedTicket?.id === ticketId)
-        this.selectedTicket = { ...this.selectedTicket, estado: newState };
     },
 
     async deleteTicket(id) {

@@ -86,45 +86,45 @@ namespace TicketSystem.Aplicacion.Servicios
         }
 
         public async Task CambiarEstadoAsync(Guid ticketId, EstadoTicket nuevoEstado, Guid actorId)
+{
+    var ticket = await _repositorioTickets.ObtenerPorIdAsync(ticketId);
+
+    if (ticket == null)
+        throw new KeyNotFoundException("El ticket no existe");
+
+    if (ticket.Estado == EstadoTicket.Cerrado)
+        throw new ArgumentException("No se puede cambiar el estado de un ticket cerrado.");
+
+    var estadoAnterior = ticket.Estado;
+    ticket.Estado = nuevoEstado;
+
+    if (nuevoEstado == EstadoTicket.Resuelto)
+    {
+        ticket.FechaResolucion = DateTime.UtcNow;
+        if (ticket.FechaLimite.HasValue)
+            ticket.SLACumplido = ticket.FechaResolucion <= ticket.FechaLimite.Value;
+    }
+
+    await _repositorioTickets.ActualizarAsync(ticket);
+    await RegistrarAccionAsync(ticketId, actorId, "ESTADO_CAMBIO", $"Cambio de estado de {estadoAnterior} a {nuevoEstado}.");
+
+    if (ticket.Usuario?.Email != null)
+    {
+        var body = "<h2>Actualización en tu ticket</h2>" +
+                   $"<p>Hola {ticket.Usuario.Nombre},</p>" +
+                   $"<p>El estado de tu ticket <strong>#{ticket.Id.ToString().Substring(0, 8)}</strong> ({ticket.Titulo}) ha cambiado a <strong>{nuevoEstado}</strong>.</p>";
+
+        _ = _servicioEmail.EnviarEmailAsync(
+            ticket.Usuario.Email,
+            "Cambio de Estado - Ticket " + ticket.Titulo,
+            body
+        ).ContinueWith(t =>
         {
-            var ticket = await _repositorioTickets.ObtenerPorIdAsync(ticketId);
-
-            if (ticket == null)
-                throw new KeyNotFoundException("El ticket no existe");
-
-            if (!EsTransicionValida(ticket.Estado, nuevoEstado))
-                throw new ArgumentException($"No se puede cambiar de {ticket.Estado} a {nuevoEstado}");
-
-            var estadoAnterior = ticket.Estado;
-            ticket.Estado = nuevoEstado;
-
-            // Handle resolution
-            if (nuevoEstado == EstadoTicket.Resuelto)
-            {
-                ticket.FechaResolucion = DateTime.UtcNow;
-                if (ticket.FechaLimite.HasValue)
-                {
-                    ticket.SLACumplido = ticket.FechaResolucion <= ticket.FechaLimite.Value;
-                }
-            }
-
-            await _repositorioTickets.ActualizarAsync(ticket);
-            await RegistrarAccionAsync(ticketId, actorId, "ESTADO_CAMBIO", $"Cambio de estado de {estadoAnterior} a {nuevoEstado}.");
-
-            // Notificar al usuario (creador) sobre el cambio de estado de su ticket
-            if (ticket.Usuario?.Email != null)
-            {
-                var body = $@"
-                    <h2>Actualización en tu ticket</h2>
-                    <p>Hola {ticket.Usuario.Nombre},</p>
-                    <p>El estado de tu ticket <strong>#{(ticket.Id.ToString().Substring(0, 8))}</strong> ({ticket.Titulo}) ha cambiado a <strong>{nuevoEstado}</strong>.</p>
-                ";
-                _ = _servicioEmail.EnviarEmailAsync(ticket.Usuario.Email, $"Cambio de Estado - Ticket {ticket.Titulo}", body).ContinueWith(t => 
-                {
-                    if (t.IsFaulted) Console.WriteLine($"SMTP Error: {t.Exception?.GetBaseException().Message}");
-                });
-            }
-        }
+            if (t.IsFaulted)
+                Console.WriteLine($"SMTP Error: {t.Exception?.GetBaseException().Message}");
+        });
+    }
+}
 
         public async Task<PagedResult<TicketDto>> ObtenerFiltradosAsync(FiltroTicketsDto filtro)
         {

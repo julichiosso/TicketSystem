@@ -288,7 +288,8 @@ const getToken = () => {
 const conectarSignalR = async () => {
   if (!props.ticketId) return;
 
-  const baseUrl = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000';
+  const baseUrl = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5134';
+
 
   connection = new signalR.HubConnectionBuilder()
     .withUrl(`${baseUrl}/hubs/tickets`, {
