@@ -1,43 +1,43 @@
-name: CD - Deploy Frontend a Vercel
+name: CI - Build & Tests
 
 on:
   push:
-    branches: [ main ]
-  workflow_run:
-    workflows: [ "CI - Build & Tests" ]
-    types: [ completed ]
-    branches: [ main ]
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
 
 jobs:
-  deploy-frontend:
-    name: Deploy a Vercel
+  build-and-test:
+    name: Build & Run Tests
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'push' }}
+
+    permissions:
+      contents: read
+      checks: write
 
     steps:
       - name: Checkout código
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
         with:
-          node-version: '20'
+          dotnet-version: '8.0.x'
 
-      - name: Instalar dependencias
-        working-directory: TicketSystem.Frontend
-        run: npm install --legacy-peer-deps
+      - name: Restaurar dependencias
+        run: dotnet restore TicketSystem.Dominio.sln
 
-      - name: Build frontend
-        working-directory: TicketSystem.Frontend
-        run: npm run build
-        env:
-          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+      - name: Compilar solución
+        run: dotnet build TicketSystem.Dominio.sln --no-restore --configuration Release
 
-      - name: Deploy a Vercel
-        uses: amondnet/vercel-action@v25
+      - name: Correr tests
+        run: dotnet test TicketSystem.Tests/TicketSystem.Tests.csproj --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=results.trx" --results-directory ./TestResults
+
+      - name: Publicar resultado de tests
+        if: always()
+        uses: dorny/test-reporter@v1
         with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          working-directory: TicketSystem.Frontend
-          vercel-args: '--prod'
+          name: xUnit Tests
+          path: './TestResults/results.trx'
+          reporter: dotnet-trx
+          fail-on-error: false
