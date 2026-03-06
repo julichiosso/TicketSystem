@@ -1,36 +1,75 @@
-# Ticket System API
+# Ticket System
 
-REST API for managing support tickets built with ASP.NET Core using Clean Architecture.
+Full Stack ticket management application built with ASP.NET Core and Vue.js following Clean Architecture principles.
+
+This project allows users to create, manage, and track support tickets through a modern web interface connected to a REST API.
+
+---
 
 ## Tech Stack
 
+### Backend
 - C#
 - ASP.NET Core
 - Entity Framework Core
 - SQL Database
 - JWT Authentication
 
+### Frontend
+- Vue.js
+- JavaScript
+- HTML
+- CSS
+- TailwindCSS / Bootstrap
+
+### Other Tools
+- Git
+- REST API
+- Clean Architecture
+
+---
+
 ## Architecture
 
-This project follows Clean Architecture to ensure separation of concerns.
+The backend follows Clean Architecture principles to ensure scalability, maintainability, and separation of concerns.
 
-Layers:
+Layers used in the backend:
 
-- Domain
-- Application
-- Infrastructure
-- API
+- **Domain**  
+  Contains core business entities and rules.
+
+- **Application**  
+  Contains use cases, interfaces, and application logic.
+
+- **Infrastructure**  
+  Handles database access and external services.
+
+- **API (Presentation Layer)**  
+  Exposes REST endpoints used by the frontend.
+
+---
 
 ## Features
 
-- Ticket creation
-- Ticket status management
-- User authentication
-- RESTful endpoints
+- User authentication with JWT
+- Create support tickets
+- Update ticket status
+- View and manage tickets
+- RESTful API
+- Frontend interface built with Vue.js
 
-## Installation
+---
 
-1. Clone the repository
-2. Configure the database
-3. Run migrations
-4. Start the API
+## Project Structure
+TicketSystem
+│
+├── backend
+│ ├── Domain
+│ ├── Application
+│ ├── Infrastructure
+│ └── API
+│
+└── frontend
+├── components
+├── pages
+└── services
