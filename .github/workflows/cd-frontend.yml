@@ -25,13 +25,15 @@ jobs:
 
       - name: Instalar dependencias
         working-directory: TicketSystem.Frontend
-        run: npm install
+        run: |
+          rm -f package-lock.json
+          npm install
 
       - name: Build frontend
         working-directory: TicketSystem.Frontend
         run: npm run build
         env:
-          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
 
       - name: Deploy a Vercel
         uses: amondnet/vercel-action@v25
