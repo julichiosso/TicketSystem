@@ -41,6 +41,10 @@ try
 
     var builder = WebApplication.CreateBuilder(args);
 
+    // ─── PUERTO RENDER ────────────────────────────────────────────────────────────
+    var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+    builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+
     builder.Host.UseSerilog();
 
     // ─── CORS ────────────────────────────────────────────────────────────────────
@@ -83,9 +87,9 @@ try
     builder.Services.AddFluentValidationClientsideAdapters();
     builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
-   builder.Services.AddDbContext<TicketSystemDbContext>(options =>
-    options.UseNpgsql(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
+    builder.Services.AddDbContext<TicketSystemDbContext>(options =>
+        options.UseNpgsql(
+            builder.Configuration.GetConnectionString("DefaultConnection")));
 
     // ─── REPOSITORIES ────────────────────────────────────────────────────────────
     builder.Services.AddScoped<IRepositorioTickets, RepositorioTickets>();
@@ -95,7 +99,7 @@ try
     builder.Services.AddScoped<IServicioTickets, ServicioTickets>();
     builder.Services.AddScoped<IServicioUsuarios, ServicioUsuarios>();
     builder.Services.AddScoped<IServicioEmail, ServicioEmail>();
-    builder.Services.AddScoped<IServicioNotificaciones, ServicioNotificaciones>(); // ← NUEVO
+    builder.Services.AddScoped<IServicioNotificaciones, ServicioNotificaciones>();
     builder.Services.AddScoped<ITokenService, TokenService>();
     builder.Services.AddScoped<IPasswordHasher<Usuario>, PasswordHasher<Usuario>>();
 
@@ -135,7 +139,6 @@ try
             RoleClaimType            = ClaimTypes.Role,
             ClockSkew                = TimeSpan.Zero
         };
-        // SignalR envía el token como query param ?access_token=
         options.Events = new JwtBearerEvents
         {
             OnMessageReceived = context =>
@@ -144,7 +147,6 @@ try
                 var path        = context.HttpContext.Request.Path;
                 if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
                     context.Token = accessToken;
-
                 return Task.CompletedTask;
             }
         };
@@ -155,10 +157,10 @@ try
     {
         options.AddFixedWindowLimiter("AuthPolicy", limiter =>
         {
-            limiter.PermitLimit            = 10;
-            limiter.Window                 = TimeSpan.FromMinutes(1);
-            limiter.QueueProcessingOrder   = QueueProcessingOrder.OldestFirst;
-            limiter.QueueLimit             = 0;
+            limiter.PermitLimit          = 10;
+            limiter.Window               = TimeSpan.FromMinutes(1);
+            limiter.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+            limiter.QueueLimit           = 0;
         });
         options.RejectionStatusCode = 429;
     });
@@ -210,11 +212,8 @@ try
     app.UseMiddleware<ExceptionMiddleware>();
     app.UseSerilogRequestLogging();
 
-    if (app.Environment.IsDevelopment())
-    {
-        app.UseSwagger();
-        app.UseSwaggerUI();
-    }
+    app.UseSwagger();
+    app.UseSwaggerUI();
 
     app.UseStaticFiles();
     app.UseHttpsRedirection();
@@ -237,8 +236,7 @@ try
         await DataSeeder.SeedAsync(context, passwordHasher);
     }
 
-    var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-    app.Run($"http://0.0.0.0:{port}");
+    app.Run();
 }
 catch (Exception ex)
 {
