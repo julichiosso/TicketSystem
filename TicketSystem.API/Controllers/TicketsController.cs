@@ -30,11 +30,15 @@ public class TicketsController : ControllerBase
     }
 
     [HttpGet("mis-tickets")]
-    public async Task<IActionResult> ObtenerMisTickets()
+    public async Task<IActionResult> ObtenerMisTickets([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
         var usuarioId = ObtenerUsuarioIdDelToken();
-        var tickets = await _servicioTickets.ObtenerPorUsuarioAsync(usuarioId);
-        return Ok(tickets);
+        var pagedResult = await _servicioTickets.ObtenerPorUsuarioAsync(usuarioId, page, pageSize);
+        return Ok(new
+        {
+            success = true,
+            data = pagedResult
+        });
     }
 
     
@@ -101,14 +105,14 @@ public class TicketsController : ControllerBase
 
     [Authorize(Roles = "Operador,Administrador")]
     [HttpGet("operador/mis-tickets")]
-    public async Task<IActionResult> ObtenerMisTicketsOperador()
+    public async Task<IActionResult> ObtenerMisTicketsOperador([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
         var operadorId = ObtenerUsuarioIdDelToken();
-        var tickets = await _servicioTickets.ObtenerPorOperadorAsync(operadorId);
+        var pagedResult = await _servicioTickets.ObtenerPorOperadorAsync(operadorId, page, pageSize);
         return Ok(new
         {
             success = true,
-            data = tickets
+            data = pagedResult
         });
     }
 

@@ -21,13 +21,21 @@ public class RepositorioTickets : IRepositorioTickets
         await _context.SaveChangesAsync();
     }
 
-    public async Task<IEnumerable<Ticket>> ObtenerPorUsuarioAsync(Guid usuarioId)
+    public async Task<(IEnumerable<Ticket> Tickets, int Total)> ObtenerPorUsuarioAsync(Guid usuarioId, int page = 1, int pageSize = 10)
     {
-        return await _context.Tickets
+        var query = _context.Tickets
             .Include(t => t.Usuario)
             .Include(t => t.OperadorAsignado)
-            .Where(t => t.UsuarioId == usuarioId && !t.IsDeleted)
+            .Where(t => t.UsuarioId == usuarioId && !t.IsDeleted);
+
+        var total = await query.CountAsync();
+        var tickets = await query
+            .OrderByDescending(t => t.FechaCreacion)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
+
+        return (tickets, total);
     }
 
     public async Task<Ticket?> ObtenerPorIdAsync(Guid id)
@@ -102,20 +110,28 @@ public class RepositorioTickets : IRepositorioTickets
         await _context.SaveChangesAsync();
     }
 
-    public async Task<IEnumerable<Ticket>> ObtenerPorOperadorAsync(Guid operadorId)
+    public async Task<(IEnumerable<Ticket> Tickets, int Total)> ObtenerPorOperadorAsync(Guid operadorId, int page = 1, int pageSize = 10)
     {
-        return await _context.Tickets
+        var query = _context.Tickets
             .Include(t => t.Usuario)
             .Include(t => t.OperadorAsignado)
-            .Where(t => t.OperadorAsignadoId == operadorId && !t.IsDeleted)
+            .Where(t => t.OperadorAsignadoId == operadorId && !t.IsDeleted);
+
+        var total = await query.CountAsync();
+        var tickets = await query
+            .OrderByDescending(t => t.FechaCreacion)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
+
+        return (tickets, total);
     }
 
     public async Task<IEnumerable<ComentarioTicket>> ObtenerComentariosPorTicketAsync(Guid ticketId, bool incluirInternos)
     {
         var query = _context.ComentariosTicket
             .Include(c => c.Autor)
-            .Include(c => c.Adjuntos)   //agregar esto
+            .Include(c => c.Adjuntos)
             .Where(c => c.TicketId == ticketId);
         if (!incluirInternos)
             query = query.Where(c => !c.EsInterno);

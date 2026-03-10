@@ -6,8 +6,8 @@ namespace TicketSystem.Aplicacion.Interfaces
     public interface IRepositorioTickets
     {
         Task CrearAsync(Ticket ticket);
-        Task<IEnumerable<Ticket>> ObtenerPorUsuarioAsync(Guid usuarioId);
-        Task<IEnumerable<Ticket>> ObtenerPorOperadorAsync(Guid operadorId);
+        Task<(IEnumerable<Ticket> Tickets, int Total)> ObtenerPorUsuarioAsync(Guid usuarioId, int page = 1, int pageSize = 10);
+        Task<(IEnumerable<Ticket> Tickets, int Total)> ObtenerPorOperadorAsync(Guid operadorId, int page = 1, int pageSize = 10);
         Task<Ticket?> ObtenerPorIdAsync(Guid id);
         IQueryable<Ticket> ObtenerQueryable();
         Task<(IEnumerable<Ticket> Tickets, int Total)> ObtenerFiltradosAsync(FiltroTicketsDto filtro);

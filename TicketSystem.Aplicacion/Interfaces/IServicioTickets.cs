@@ -8,8 +8,8 @@ namespace TicketSystem.Aplicacion.Interfaces
     public interface IServicioTickets
     {
         Task<Guid> CrearAsync(CrearTicketDto dto);
-        Task<IEnumerable<TicketDto>> ObtenerPorUsuarioAsync(Guid usuarioId);
-        Task<IEnumerable<TicketDto>> ObtenerPorOperadorAsync(Guid operadorId);
+        Task<PagedResult<TicketDto>> ObtenerPorUsuarioAsync(Guid usuarioId, int page = 1, int pageSize = 10);
+        Task<PagedResult<TicketDto>> ObtenerPorOperadorAsync(Guid operadorId, int page = 1, int pageSize = 10);
         Task CambiarEstadoAsync(Guid ticketId, EstadoTicket nuevoEstado, Guid actorId);
         Task<PagedResult<TicketDto>> ObtenerFiltradosAsync(FiltroTicketsDto filtro);
         Task EliminarAsync(Guid id, Guid actorId);

@@ -22,9 +22,9 @@ namespace TicketSystem.Aplicacion.Servicios
             _notificaciones      = notificaciones;
         }
 
-        // ─────────────────────────────────────────────────────────────
-        // CREAR TICKET
-        // ─────────────────────────────────────────────────────────────
+        
+        
+        
         public async Task<Guid> CrearAsync(CrearTicketDto dto)
         {
             var usuario = await _repositorioUsuarios.ObtenerPorIdAsync(dto.UsuarioId)
@@ -57,25 +57,37 @@ namespace TicketSystem.Aplicacion.Servicios
             await _repositorioTickets.CrearAsync(ticket);
             await RegistrarAccionAsync(ticket.Id, dto.UsuarioId, "CREACIÓN", $"Ticket '{ticket.Titulo}' creado con prioridad {ticket.Prioridad}.");
 
-            // Notificación: confirmación al usuario
+            
             await _notificaciones.NotificarTicketCreadoAsync(ticket, usuario);
 
             return ticket.Id;
         }
 
-        // ─────────────────────────────────────────────────────────────
-        // OBTENER TICKETS
-        // ─────────────────────────────────────────────────────────────
-        public async Task<IEnumerable<TicketDto>> ObtenerPorUsuarioAsync(Guid usuarioId)
+        
+        
+        
+        public async Task<PagedResult<TicketDto>> ObtenerPorUsuarioAsync(Guid usuarioId, int page = 1, int pageSize = 10)
         {
-            var tickets = await _repositorioTickets.ObtenerPorUsuarioAsync(usuarioId);
-            return MapToDto(tickets);
+            var (tickets, total) = await _repositorioTickets.ObtenerPorUsuarioAsync(usuarioId, page, pageSize);
+            return new PagedResult<TicketDto>
+            {
+                Data = MapToDto(tickets),
+                Page = page,
+                PageSize = pageSize,
+                TotalRecords = total
+            };
         }
 
-        public async Task<IEnumerable<TicketDto>> ObtenerPorOperadorAsync(Guid operadorId)
+        public async Task<PagedResult<TicketDto>> ObtenerPorOperadorAsync(Guid operadorId, int page = 1, int pageSize = 10)
         {
-            var tickets = await _repositorioTickets.ObtenerPorOperadorAsync(operadorId);
-            return MapToDto(tickets);
+            var (tickets, total) = await _repositorioTickets.ObtenerPorOperadorAsync(operadorId, page, pageSize);
+            return new PagedResult<TicketDto>
+            {
+                Data = MapToDto(tickets),
+                Page = page,
+                PageSize = pageSize,
+                TotalRecords = total
+            };
         }
 
         public async Task<PagedResult<TicketDto>> ObtenerFiltradosAsync(FiltroTicketsDto filtro)
@@ -91,9 +103,9 @@ namespace TicketSystem.Aplicacion.Servicios
             };
         }
 
-        // ─────────────────────────────────────────────────────────────
-        // CAMBIAR ESTADO
-        // ─────────────────────────────────────────────────────────────
+        
+        
+        
         public async Task CambiarEstadoAsync(Guid ticketId, EstadoTicket nuevoEstado, Guid actorId)
         {
             var ticket = await _repositorioTickets.ObtenerPorIdAsync(ticketId)
@@ -115,15 +127,15 @@ namespace TicketSystem.Aplicacion.Servicios
             await _repositorioTickets.ActualizarAsync(ticket);
             await RegistrarAccionAsync(ticketId, actorId, "ESTADO_CAMBIO", $"Cambio de estado de {estadoAnterior} a {nuevoEstado}.");
 
-            // Notificación: aviso al dueño del ticket (solo si el actor no es él mismo)
+            
             var duenio = await _repositorioUsuarios.ObtenerPorIdAsync(ticket.UsuarioId);
             if (duenio != null && duenio.Id != actorId)
                 await _notificaciones.NotificarCambioEstadoAsync(ticket, duenio, estadoAnterior, nuevoEstado);
         }
 
-        // ─────────────────────────────────────────────────────────────
-        // ASIGNAR OPERADOR
-        // ─────────────────────────────────────────────────────────────
+        
+        
+        
         public async Task AsignarOperadorAsync(Guid ticketId, Guid? operadorId, Guid actorId)
         {
             var ticket = await _repositorioTickets.ObtenerPorIdAsync(ticketId)
@@ -149,14 +161,14 @@ namespace TicketSystem.Aplicacion.Servicios
             await _repositorioTickets.ActualizarAsync(ticket);
             await RegistrarAccionAsync(ticketId, actorId, "ASIGNACIÓN", $"Operador asignado: {nombreOperador}.");
 
-            // Notificación: aviso al operador asignado
+            
             if (operador != null)
                 await _notificaciones.NotificarAsignacionOperadorAsync(ticket, operador);
         }
 
-        // ─────────────────────────────────────────────────────────────
-        // ELIMINAR TICKET (soft delete)
-        // ─────────────────────────────────────────────────────────────
+        
+        
+        
         public async Task EliminarAsync(Guid id, Guid actorId)
         {
             var ticket = await _repositorioTickets.ObtenerPorIdAsync(id)
@@ -167,9 +179,9 @@ namespace TicketSystem.Aplicacion.Servicios
             await RegistrarAccionAsync(id, actorId, "DELECIÓN", $"Ticket '{ticket.Titulo}' eliminado.");
         }
 
-        // ─────────────────────────────────────────────────────────────
-        // COMENTARIOS
-        // ─────────────────────────────────────────────────────────────
+        
+        
+        
         public async Task<IEnumerable<ComentarioTicketDto>> ObtenerComentariosAsync(Guid ticketId, bool incluirInternos)
         {
             var ticket = await _repositorioTickets.ObtenerPorIdAsync(ticketId)
@@ -219,8 +231,8 @@ namespace TicketSystem.Aplicacion.Servicios
             await _repositorioTickets.AgregarComentarioAsync(comentario);
             await RegistrarAccionAsync(ticketId, autorId, "COMENTARIO", $"{(dto.Interno ? "[Interno] " : "")}Comentario agregado por {autor.Nombre}.");
 
-            // Notificación: aviso al dueño del ticket si el autor es distinto
-            // Los comentarios internos no se notifican al usuario final
+            
+            
             if (!dto.Interno)
             {
                 var duenio = await _repositorioUsuarios.ObtenerPorIdAsync(ticket.UsuarioId);
@@ -241,9 +253,9 @@ namespace TicketSystem.Aplicacion.Servicios
             };
         }
 
-        // ─────────────────────────────────────────────────────────────
-        // AUDITORÍA
-        // ─────────────────────────────────────────────────────────────
+        
+        
+        
         public async Task<IEnumerable<AuditLog>> ObtenerAuditLogsAsync()
         {
             return await _repositorioTickets.ObtenerAuditLogsAsync();
@@ -262,9 +274,9 @@ namespace TicketSystem.Aplicacion.Servicios
             });
         }
 
-        // ─────────────────────────────────────────────────────────────
-        // MÉTRICAS
-        // ─────────────────────────────────────────────────────────────
+        
+        
+        
         public async Task<MetricasDto> ObtenerMetricasAsync()
         {
             var tickets = _repositorioTickets.ObtenerQueryable().ToList();
@@ -311,9 +323,9 @@ namespace TicketSystem.Aplicacion.Servicios
             };
         }
 
-        // ─────────────────────────────────────────────────────────────
-        // MAPPER
-        // ─────────────────────────────────────────────────────────────
+        
+        
+        
         private static IEnumerable<TicketDto> MapToDto(IEnumerable<Ticket> tickets)
         {
             return tickets.Select(t => new TicketDto
