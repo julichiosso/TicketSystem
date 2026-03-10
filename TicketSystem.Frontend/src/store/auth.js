@@ -1,9 +1,7 @@
 import { defineStore } from 'pinia';
 import axios from 'axios';
 
-export const API_URL = import.meta.env.VITE_API_BASE_URL
-  ? `${import.meta.env.VITE_API_BASE_URL}/api`
-  : 'http://localhost:5134/api';
+export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5134/api';
 
 let isRefreshing = false;
 let failedQueue = [];
