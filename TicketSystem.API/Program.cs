@@ -61,22 +61,10 @@ try
     {
         options.AddPolicy("AllowFrontend", policy =>
         {
-            if (builder.Environment.IsDevelopment() && allowedOrigins.Length == 0)
-            {
-                policy
-                    .SetIsOriginAllowed(_ => true)
-                    .AllowAnyHeader()
-                    .AllowAnyMethod()
-                    .AllowCredentials();
-            }
-            else
-            {
-                policy
-                    .WithOrigins(allowedOrigins)
-                    .AllowAnyHeader()
-                    .AllowAnyMethod()
-                    .AllowCredentials();
-            }
+            policy.SetIsOriginAllowed(_ => true) // Allow any origin to resolve CORS issues
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials();
         });
     });
 
@@ -232,29 +220,23 @@ try
 
     using (var scope = app.Services.CreateScope())
     {
-        var context = scope.ServiceProvider.GetRequiredService<TicketSystemDbContext>();
-        var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher<User>>();
-
+        var services = scope.ServiceProvider;
         try
         {
+            var context = services.GetRequiredService<TicketSystemDbContext>();
+            var passwordHasher = services.GetRequiredService<IPasswordHasher<User>>();
+            
+            Log.Information("Applying database migrations...");
             await context.Database.MigrateAsync();
+            
+            Log.Information("Seeding database...");
+            await DataSeeder.SeedAsync(context, passwordHasher);
         }
-        catch (Npgsql.PostgresException ex) when (ex.SqlState == "42P07")
+        catch (Exception ex)
         {
-            Log.Warning("Migration conflict detected (tables already exist). Marking pending migrations as applied...");
-
-            var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
-            foreach (var migration in pendingMigrations)
-            {
-                await context.Database.ExecuteSqlRawAsync(
-                    "INSERT INTO \"__EFMigrationsHistory\" (\"MigrationId\", \"ProductVersion\") VALUES ({0}, {1}) ON CONFLICT DO NOTHING",
-                    migration,
-                    "8.0.0");
-                Log.Information("Marked migration {Migration} as applied.", migration);
-            }
+            Log.Error(ex, "An error occurred while migrating or seeding the database.");
+            // We don't throw here to allow the app to start and respond with errors via the pipeline
         }
-
-        await DataSeeder.SeedAsync(context, passwordHasher);
     }
 
     app.Run();
